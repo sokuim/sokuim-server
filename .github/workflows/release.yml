@@ -17,8 +17,20 @@ jobs:
       core: ${{ steps.filter.outputs.core }} # core服务需要监控的文件
       gateway: ${{ steps.filter.outputs.gateway }} # gateway服务需要监控的文件
     steps:
-      - name: Checkout file change
+      - name: Checkout code
         uses: action/checkout@v4
         with:
           fetch-depth: 0 #拉取git的所有历史记录，包含分支、comet、tag, 1时只拉取最近一次
 
+      - name: Get change files
+        id: filter
+        uses: dorny/path-filter@v4
+        with:
+          filters: |
+            comet:
+              - go.mod
+              - app/comet.go
+              - .github/workflows/release.yml
+      - name: debug output
+        run: |
+          echo "comet status is: ${{ steps.filter.outputs.comet }}"
