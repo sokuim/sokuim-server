@@ -43,9 +43,26 @@ jobs:
               - go.mod
               - app/gateway/gateway.go
               - .github/workflows/release.yml
+
       - name: debug output
         run: |
           echo "release comet: ${{ steps.filter.outputs.comet }}"
           echo "release core: ${{ steps.filter.outputs.core }}"
           echo "release gateway: ${{ steps.filter.outputs.gateway }}"
           echo "current branch: ${{ github.ref_name }}"
+
+  # 发布: prod
+  release-dev:
+    needs: check-changes
+    if: |
+      needs.check-changes.outputs.comet == 'true' && 
+      (github.ref_name == 'master' || github.ref_name == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - name: show variables
+        run: |
+          echo "registry: ${{ vars.REGISTRY }}"
+          echo "current account: ${{ github.actor }}"
+          echo "token: ${{ secrets.GITHUB_TOKEN }}"
