@@ -33,7 +33,15 @@ jobs:
           filters: |
             comet:
               - go.mod
-              - app/comet.go
+              - app/comet/comet.go
+              - .github/workflows/release.yml
+            core:
+              - go.mod
+              - app/core/core.go
+              - .github/workflows/release.yml
+            gateway:
+              - go.mod
+              - app/gateway/gateway.go
               - .github/workflows/release.yml
       - name: debug output
         run: |
