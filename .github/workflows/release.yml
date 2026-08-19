@@ -1,0 +1,14 @@
+name: sokuim server auto-release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "main.go"
+      - "go.mod"
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest # runner runtime environment
