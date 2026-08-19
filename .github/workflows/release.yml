@@ -87,7 +87,7 @@ jobs:
         if: ${{ matrix.changed == 'true' }}
         run: |
           RAW_REPO=${{ github.repository }}
-          echo "IMAGE_BASE=ghcr.io/${RAW_REPO,,}/${{ matrix.services }}" >> $GITHUB_ENV
+          echo "IMAGE_BASE=ghcr.io/${RAW_REPO,,}/${{ matrix.service }}" >> $GITHUB_ENV
           echo "SHORT_SHA=${GITHUB_SHA:~0,7}" >> $GITHUB_ENV
 
       # 初始化 Docker buildx
