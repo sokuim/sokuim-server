@@ -104,3 +104,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 构建并推送镜像
+      - name: Build and push docker image
+        if: ${{ matrix.changed == 'true' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ env.IMAGE_BASE }}:latest
+            ${{ env.IMAGE_BASE }}:{{ env.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mod=max
