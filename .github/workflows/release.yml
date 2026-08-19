@@ -37,4 +37,7 @@ jobs:
               - .github/workflows/release.yml
       - name: debug output
         run: |
-          echo "comet status is: ${{ steps.filter.outputs.comet }}"
+          echo "release comet: ${{ steps.filter.outputs.comet }}"
+          echo "release core: ${{ steps.filter.outputs.core }}"
+          echo "release gateway: ${{ steps.filter.outputs.gateway }}"
+          echo "current branch: ${{ github.ref_name }}"
