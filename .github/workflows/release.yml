@@ -77,22 +77,30 @@ jobs:
             dockerfile: ./app/gateway/Dockerfile
             changed: ${{ needs.check-changes.outputs.gateway }}
     steps:
-      # 仅当矩阵项的服务发生变化才执行后续步骤
-      - name: checkout code
+      # 仅对改变的服务拉取镜像
+      - name: Checkout code
         if: ${{ matrix.changed == 'true' }}
         uses: actions/checkout@v4
-      # Docker Buildx: 构建与推送优化
-      - name: Set up docker buildx
+
+      # 提取环境变量(小写仓库路径与 comet sha)
+      - name: Set environment variables
+        if: ${{ matrix.changed == 'true' }}
+        run: |
+          RAW_REPO=${{ github.repository }}
+          echo "IMAGE_BASE=ghcr.io/${RAW_REPO,,}/${{ matrix.services }}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA:~0,7}" >> $GITHUB_ENV
+
+      # 初始化 Docker buildx
+      - name: Set up Docker buildx
         if: ${{ matrix.changed == 'true' }}
         uses: docker/setup-buildx-action@v3
 
-      - name: show variables
-        run: |
-          echo "current account: ${{ github.actor }}"
-          echo "token: ${{ secrets.GITHUB_TOKEN }}"
-      - name: Login registry
+      # 登录 GitHub
+      - name: Login to GHCR
+        if: ${{ matrix.changed == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
