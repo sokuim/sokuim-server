@@ -114,6 +114,6 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_BASE }}:latest
-            ${{ env.IMAGE_BASE }}:{{ env.SHORT_SHA }}
+            ${{ env.IMAGE_BASE }}:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mod=max
