@@ -77,8 +77,15 @@ jobs:
             dockerfile: ./app/gateway/Dockerfile
             changed: ${{ needs.check-changes.outputs.gateway }}
     steps:
+      # 仅当矩阵项的服务发生变化才执行后续步骤
       - name: checkout code
+        if: ${{ matrix.changed == 'true' }}
         uses: actions/checkout@v4
+      # Docker Buildx: 构建与推送优化
+      - name: Set up docker buildx
+        if: ${{ matrix.changed == 'true' }}
+        uses: docker/setup-buildx-action@v3
+
       - name: show variables
         run: |
           echo "current account: ${{ github.actor }}"
