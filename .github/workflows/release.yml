@@ -5,9 +5,13 @@ on:
     branches:
       - main
       - master
-    paths:
+    paths: # paths中的代码发生变化时，触发 action
       - "main.go"
       - "go.mod"
+      - ".github/workflows/release.yml"
+      - "app/comet/comet.go"
+      - "app/core/core.go"
+      - "app/gateway/gateway.go"
 
 jobs:
   check-changes:
