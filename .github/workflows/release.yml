@@ -11,4 +11,14 @@ on:
 
 jobs:
   check-changes:
-    runs-on: ubuntu-latest # runner runtime environment
+    runs-on: ubuntu-latest # runner 运行环境
+    outputs:
+      comet: ${{ steps.filter.outputs.comet }} # comet服务需要监控的文件
+      core: ${{ steps.filter.outputs.core }} # core服务需要监控的文件
+      gateway: ${{ steps.filter.outputs.gateway }} # gateway服务需要监控的文件
+    steps:
+      - name: Checkout file change
+        uses: action/checkout@v4
+        with:
+          fetch-depth: 0 #拉取git的所有历史记录，包含分支、comet、tag, 1时只拉取最近一次
+
