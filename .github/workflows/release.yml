@@ -52,17 +52,25 @@ jobs:
           echo "current branch: ${{ github.ref_name }}"
 
   # 发布: prod
-  release-dev:
+  release-prod:
     needs: check-changes
     if: |
       needs.check-changes.outputs.comet == 'true' && 
       (github.ref_name == 'master' || github.ref_name == 'main')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: checkout code
         uses: actions/checkout@v4
       - name: show variables
         run: |
-          echo "registry: ${{ vars.REGISTRY }}"
           echo "current account: ${{ github.actor }}"
           echo "token: ${{ secrets.GITHUB_TOKEN }}"
+      - name: Login registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
