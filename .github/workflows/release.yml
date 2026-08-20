@@ -69,12 +69,24 @@ jobs:
         include:
           - service: comet
             dockerfile: ./app/comet/Dockerfile
+            host_var: RELEASE_HOST_COMET
+            path_var: RELEASE_PATH_COMET
+            user_var: RELEASE_USER_COMET
+            secret_var: RELEASE_SSH_COMET
             changed: ${{ needs.check-changes.outputs.comet }}
           - service: core
             dockerfile: ./app/core/Dockerfile
+            host_var: RELEASE_HOST_CORE
+            path_var: RELEASE_PATH_CORE
+            user_var: RELEASE_USER_CORE
+            secret_var: RELEASE_SSH_CORE
             changed: ${{ needs.check-changes.outputs.core }}
           - service: gateway
             dockerfile: ./app/gateway/Dockerfile
+            host_var: RELEASE_HOST_GATEWAY
+            path_var: RELEASE_PATH_GATEWAY
+            user_var: RELEASE_USER_GATEWAY
+            secret_var: RELEASE_SSH_GATEWAY
             changed: ${{ needs.check-changes.outputs.gateway }}
     steps:
       # 仅对改变的服务拉取镜像
@@ -117,3 +129,66 @@ jobs:
             ${{ env.IMAGE_BASE }}:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mod=max
+      - name: release to prod
+        if: ${{ matrix.changed == 'true' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars[matrix.host_var] }}
+          username: ${{ vars[matrix.user_var] }}
+          key: ${{ secrets[matrix.secret_var] }}
+          script: |
+            set -e # 出错时停止运行脚本
+            
+            SERVICE="${{ matrix.service }}"
+            RAW_REPO="${{ github.repository }}"
+            # 动态读取对应服务在服务器上的存放目录
+            WORK_DIR="${{ vars[matrix.path_val] || '/workspacce/docker/sokuim-server' }}"
+            COMPOSE_FILE="docker-compose.${SERVICE}.yml"
+            
+            echo "=========================================="
+            echo "Deploying Service: $SERVICE"
+            echo "Target Image: $IMAGE:latest"
+            echo "Work Directory: $WORK_DIR"
+            echo "Compose File: $COMPOSE_FILE"
+            echo "=========================================="
+            
+            # 检查、创建工作目录
+            if [ ! -d "$WORK_DIR" ]; then
+              echo "Release path is not exist. create: $WORK_DIR"
+              sudo mkdir -p "$WORK_DIR"
+              sudo chown -R $USER:$USER "$WORK_DIR"
+              echo "Release path created successful!"
+            else
+              echo "Release path exists: $WORK_DIR"
+            fi
+            cd "$WORK_DIR"
+            
+            # 登录GitHub 镜像仓库
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # 下载 docker-compose 文件
+            echo "Downloading docker-compose file for $SERVICE from GitHub..."
+            curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/app/${SERVICE}/docker-compose.yml" \
+              -o "$COMPOSE_FILE"
+            
+            # 下载检查与校验
+            if [ ! -f "$COMPOSE_FILE"] || [ ! -s "$COMPOSE_FILE"]; then
+              echo "Error: Download app/${SERVICE}/docker-compose.yml failed or file is empty!"
+              exit 1
+            fi
+            
+            echo "Content of $COMPOSE_FILE:"
+            cat "$COMPOSE_FILE"
+            
+            # 拉取镜像并部署
+            echo "Pulling latest image for $SERVICE..."
+            docker compose -f "$COMPOSE_FILE" pull
+            
+            echo "Restart $SERVICE..."
+            docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+            
+            # 清理旧镜像
+            docker image prune -f
+            
+            echo "Deployment for $SERVICE completed successful!"
