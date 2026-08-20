@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-s -w" -o comet .
+RUN go build -ldflags="-s -w" -o comet ./app/comet
 
 FROM alpine:3.19
 
