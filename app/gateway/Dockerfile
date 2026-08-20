@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-s -w" -o comet ./app/gateway
+RUN go build -ldflags="-s -w" -o gateway ./app/gateway
 
 FROM alpine:3.19
 
