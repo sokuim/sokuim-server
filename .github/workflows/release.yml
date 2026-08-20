@@ -185,6 +185,9 @@ jobs:
             echo "Pulling latest image for $SERVICE..."
             docker compose -f "$COMPOSE_FILE" pull
             
+            # 清理残留的非 compose 管理的同名旧容器
+            docker rm -f "sokuim-$SERVICE" 2>/dev/null || true
+            
             echo "Restart $SERVICE..."
             docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
             
