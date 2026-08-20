@@ -142,7 +142,7 @@ jobs:
             SERVICE="${{ matrix.service }}"
             RAW_REPO="${{ github.repository }}"
             # 动态读取对应服务在服务器上的存放目录
-            WORK_DIR="${{ vars[matrix.path_val] || '/workspacce/docker/sokuim-server' }}"
+            WORK_DIR="${{ vars[matrix.path_var] || '/workspacce/docker/sokuim-server' }}"
             COMPOSE_FILE="docker-compose.${SERVICE}.yml"
             
             echo "=========================================="
