@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  comet:
+  gateway:
     image: ghcr.io/sokuim/sokuim-server/gateway:latest
-    container_name: sokuim-core
+    container_name: sokuim-gateway
     restart: always
     ports:
       - "6072:6072"

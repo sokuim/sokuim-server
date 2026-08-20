@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  comet:
+  core:
     image: ghcr.io/sokuim/sokuim-server/core:latest
     container_name: sokuim-core
     restart: always
