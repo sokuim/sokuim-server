@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  comet:
+    image: ghcr.io/sokuim/sokuim-server/comet:latest
+    container_name: sokuim-comet
+    restart: always
+    ports:
+      - "6070:6070"
+    volumes:
+      # - ./etc:/app/etc # 挂载配置文件目录(根据实际情况调整)
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m" # 单个文件最大 100M
+        max-file: "3" # 最多保留3个日志文件
