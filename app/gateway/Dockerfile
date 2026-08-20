@@ -22,8 +22,8 @@ RUN apk add --no-cache ca-certificates tzdata && \
 
 WORKDIR /app
 
-COPY --from=Builder /app/core .
+COPY --from=Builder /app/gateway .
 
 EXPOSE 6072
 
-CMD ["./core"]
+CMD ["./gateway"]
