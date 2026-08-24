@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  job:
+    image: ghcr.io/sokuim/sokuim-server/job:latest
+    container_name: sokuim-job
+    restart: always
+    ports:
+      - "6073:6073"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"

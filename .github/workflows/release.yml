@@ -12,6 +12,7 @@ on:
       - "app/comet/**" # comet下所有文件修改均触发
       - "app/core/**" # core下所有文件修改均触发
       - "app/gateway/**" # gateway下所有文件修改均触发
+      - "app/job/**" # gateway下所有文件修改均触发
 
 jobs:
   check-changes:
@@ -43,12 +44,17 @@ jobs:
               - 'go.mod'
               - 'app/gateway/**'
               - '.github/workflows/release.yml'
+            job:
+              - 'go.mod'
+              - 'app/job/**'
+              - '.github/workflows/release.yml'
 
       - name: debug output
         run: |
           echo "release comet: ${{ steps.filter.outputs.comet }}"
           echo "release core: ${{ steps.filter.outputs.core }}"
           echo "release gateway: ${{ steps.filter.outputs.gateway }}"
+          echo "release job: ${{ steps.filter.outputs.job }}"
           echo "current branch: ${{ github.ref_name }}"
 
   # 发布: prod
@@ -88,6 +94,13 @@ jobs:
             user_var: RELEASE_USER_GATEWAY
             secret_var: RELEASE_SSH_GATEWAY
             changed: ${{ needs.check-changes.outputs.gateway }}
+          - service: job
+            dockerfile: ./app/job/Dockerfile
+            host_var: RELEASE_HOST_JOB
+            path_var: RELEASE_PATH_JOB
+            user_var: RELEASE_USER_JOB
+            secret_var: RELEASE_SSH_JOB
+            changed: ${{ needs.check-changes.outputs.job }}
     steps:
       # 仅对改变的服务拉取镜像
       - name: Checkout code
