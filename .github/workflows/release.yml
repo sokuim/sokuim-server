@@ -21,6 +21,7 @@ jobs:
       comet: ${{ steps.filter.outputs.comet }} # comet服务需要监控的文件
       core: ${{ steps.filter.outputs.core }} # core服务需要监控的文件
       gateway: ${{ steps.filter.outputs.gateway }} # gateway服务需要监控的文件
+      job: ${{ steps.filter.outputs.job }} # job服务需要监控的文件
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
