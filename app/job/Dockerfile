@@ -10,6 +10,8 @@ COPY go.mod ./
 
 RUN go mod download
 
+COPY . .
+
 RUN go build -ldflags="-s -w" -o job ./app/job
 
 FROM alpine:3.19
