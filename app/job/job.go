@@ -19,8 +19,8 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello, Job: "+time.Now().String())
 	})
-	log.Println("Listening on :7073")
-	err := http.ListenAndServe(":7073", nil)
+	log.Println("Listening on :6073")
+	err := http.ListenAndServe(":6073", nil)
 	if err != nil {
 		panic(err)
 	}
