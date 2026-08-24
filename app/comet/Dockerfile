@@ -2,7 +2,7 @@ FROM golang:1.25-alpine AS Builder
 
 WORKDIR /app
 
-ENV GC_ENABLE=0 \
+ENV CGO_ENABLED=0 \
     GOOS=linux \
     GOPROXY=https://goproxy.cn,direct
 
