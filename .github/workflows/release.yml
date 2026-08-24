@@ -65,7 +65,8 @@ jobs:
       (github.ref_name == 'master' || github.ref_name == 'main') &&
       (needs.check-changes.outputs.comet == 'true' ||
        needs.check-changes.outputs.core == 'true' ||
-       needs.check-changes.outputs.gateway == 'true')
+       needs.check-changes.outputs.gateway == 'true' ||
+       needs.check-changes.outputs.job == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
