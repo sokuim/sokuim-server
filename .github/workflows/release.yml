@@ -8,6 +8,7 @@ on:
     paths: # paths中的代码发生变化时，触发 action
       - "main.go"
       - "go.mod"
+      - "go.sum"
       - ".github/workflows/release.yml"
       - "app/comet/**" # comet下所有文件修改均触发
       - "app/core/**" # core下所有文件修改均触发
@@ -35,18 +36,26 @@ jobs:
           filters: |
             comet:
               - 'go.mod'
+              - 'go.sum'
+              - 'pkg/**'
               - 'app/comet/**'
               - '.github/workflows/release.yml'
             core:
               - 'go.mod'
+              - 'go.sum'
+              - 'pkg/**'
               - 'app/core/**'
               - '.github/workflows/release.yml'
             gateway:
               - 'go.mod'
+              - 'go.sum'
+              - 'pkg/**'
               - 'app/gateway/**'
               - '.github/workflows/release.yml'
             job:
               - 'go.mod'
+              - 'go.sum'
+              - 'pkg/**'
               - 'app/job/**'
               - '.github/workflows/release.yml'
 
@@ -72,7 +81,7 @@ jobs:
       contents: read
       packages: write
     strategy: # 矩阵, 所有服务以及对应的检测输出
-      fail-fast: true # 单个服务构建失败不影响其他服务
+      fail-fast: false # 单个服务构建失败不影响其他服务
       matrix:
         include:
           - service: comet

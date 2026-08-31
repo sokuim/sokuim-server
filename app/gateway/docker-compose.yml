@@ -6,12 +6,13 @@ services:
     container_name: sokuim-gateway
     restart: always
     ports:
-      - "6072:6072"
+      - "8080:8080"
     volumes:
-      # - ./etc:/app/etc # 挂载配置文件目录(根据实际情况调整)
-      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m" # 单个文件最大 100M
-        max-file: "3" # 最多保留3个日志文件
+      - ./etc/gateway.build.yaml:/app/etc/gateway.yaml:ro # config
+      - /etc/localtime:/etc/localtime:ro # timezone
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/common/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
