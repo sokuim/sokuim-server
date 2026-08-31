@@ -1,0 +1,14 @@
+info (
+	title:  "common api service"
+	desc:   "common restful http service"
+	author: "stiffer.chen"
+	email:  "stiffer.chen@sokuim.com"
+)
+
+type (
+	CommonHealthReq  {}
+	CommonHealthResp {
+		Status string `json:"status"`
+	}
+)
+

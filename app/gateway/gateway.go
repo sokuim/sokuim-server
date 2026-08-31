@@ -1,27 +1,31 @@
-// Package main
-// File gateway.go
-// Copyright 2026 sokuim.com - All Rights Reserved
-// Link https://www.sokuim.com
-// Author stiffer.chen <stiffer@sokuim.com>
-// Created 2026-08-17 00:42:59
-// Modified 2026-08-17 00:42:59
-
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
-	"net/http"
-	"time"
+
+	"sokuim/sokuim-server/app/gateway/internal/config"
+	"sokuim/sokuim-server/app/gateway/internal/handler"
+	"sokuim/sokuim-server/app/gateway/internal/svc"
+
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/rest"
 )
 
+var configFile = flag.String("f", "etc/gateway.yaml", "the config file")
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "sokuim.gateway-001: "+time.Now().String())
-	})
-	log.Println("comet start at :6072")
-	err := http.ListenAndServe(":6072", nil)
-	if err != nil {
-		panic(err)
-	}
+	flag.Parse()
+
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
+
+	server := rest.MustNewServer(c.RestConf)
+	defer server.Stop()
+
+	ctx := svc.NewServiceContext(c)
+	handler.RegisterHandlers(server, ctx)
+
+	fmt.Printf("Starting gateway at %s:%d...\n", c.Host, c.Port)
+	server.Start()
 }

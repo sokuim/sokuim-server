@@ -1,0 +1,21 @@
+syntax = "v1"
+
+info (
+	title:  "gateway api service"
+	desc:   "gateway restful http service"
+	author: "stiffer.chen"
+	email:  "stiffer.chen@sokuim.com"
+)
+
+import "api/common.api"
+
+@server (
+	prefix: common
+	group:  common
+)
+service gateway {
+	@doc "Healthz check"
+	@handler Healthz
+	get /healthz (CommonHealthReq) returns (CommonHealthResp)
+}
+
