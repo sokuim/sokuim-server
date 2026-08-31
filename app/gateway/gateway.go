@@ -17,7 +17,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "sokuim.gateway: "+time.Now().String())
+		fmt.Fprintf(w, "sokuim.gateway-001: "+time.Now().String())
 	})
 	log.Println("comet start at :6072")
 	err := http.ListenAndServe(":6072", nil)
