@@ -157,8 +157,6 @@ jobs:
             ${{ env.IMAGE_BASE }}:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mod=max
-          build-args: |
-            GATEWAY_PORT=${{ vars.PORT_GATEWAY || 8080 }}
       - name: release to prod
         if: ${{ matrix.changed == 'true' }}
         uses: appleboy/ssh-action@v1.0.3
