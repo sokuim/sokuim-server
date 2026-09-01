@@ -85,6 +85,7 @@ jobs:
       matrix:
         include:
           - service: comet
+            port: 6070
             dockerfile: ./app/comet/Dockerfile
             host_var: RELEASE_HOST_COMET
             path_var: RELEASE_PATH_COMET
@@ -92,6 +93,7 @@ jobs:
             secret_var: RELEASE_SSH_COMET
             changed: ${{ needs.check-changes.outputs.comet }}
           - service: core
+            port: 6071
             dockerfile: ./app/core/Dockerfile
             host_var: RELEASE_HOST_CORE
             path_var: RELEASE_PATH_CORE
@@ -99,6 +101,7 @@ jobs:
             secret_var: RELEASE_SSH_CORE
             changed: ${{ needs.check-changes.outputs.core }}
           - service: gateway
+            port: ${{ vars.PORT_GATEWAY || 8080 }}
             dockerfile: ./app/gateway/Dockerfile
             host_var: RELEASE_HOST_GATEWAY
             path_var: RELEASE_PATH_GATEWAY
@@ -106,6 +109,7 @@ jobs:
             secret_var: RELEASE_SSH_GATEWAY
             changed: ${{ needs.check-changes.outputs.gateway }}
           - service: job
+            port: 6073
             dockerfile: ./app/job/Dockerfile
             host_var: RELEASE_HOST_JOB
             path_var: RELEASE_PATH_JOB
@@ -217,7 +221,11 @@ jobs:
             
             # 清理残留的非 compose 管理的同名旧容器
             docker rm -f "sokuim-$SERVICE" 2>/dev/null || true
-            
+
+            # 清理占用目标端口的容器
+            PORT="${{ matrix.port }}"
+            docker ps -a --filter "publish=$PORT" -q | xargs -r docker rm -f 2>/dev/null || true
+
             echo "Restart $SERVICE..."
             docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
             
