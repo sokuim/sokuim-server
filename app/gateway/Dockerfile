@@ -12,6 +12,10 @@ RUN go mod download
 
 COPY . .
 
+ARG GATEWAY_PORT=8080
+RUN mkdir -p /app/etc && \
+    sed "s/\${GATEWAY_PORT}/${GATEWAY_PORT}/g" /app/app/gateway/etc/gateway.build.yaml > /app/etc/gateway.yaml
+
 RUN go build -ldflags="-s -w" -o gateway ./app/gateway
 
 FROM alpine:3.19
@@ -23,7 +27,7 @@ RUN apk add --no-cache ca-certificates tzdata curl && \
 WORKDIR /app
 
 COPY --from=Builder /app/gateway .
-COPY --from=Builder /app/app/gateway/etc ./etc
+COPY --from=Builder /app/etc/gateway.yaml ./etc/gateway.yaml
 
 EXPOSE 8080
 

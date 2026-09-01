@@ -153,36 +153,8 @@ jobs:
             ${{ env.IMAGE_BASE }}:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mod=max
-      - name: Prepare config and compose files
-        if: ${{ matrix.changed == 'true' }}
-        run: |
-          SERVICE="${{ matrix.service }}"
-          export GATEWAY_PORT=${{ vars.PORT_GATEWAY || 8080 }}
-          if [ -d "app/$SERVICE/etc" ]; then
-            for file in app/$SERVICE/etc/*.yaml; do
-              if [ -f "$file" ]; then
-                envsubst < "$file" > "${file}.tmp"
-                mv "${file}.tmp" "$file"
-              fi
-            done
-          fi
-          mv "app/$SERVICE/docker-compose.yml" "app/$SERVICE/docker-compose.$SERVICE.yml"
-      - name: Copy config files to remote server
-        if: ${{ matrix.changed == 'true' }}
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ vars[matrix.host_var] }}
-          username: ${{ vars[matrix.user_var] }}
-          key: ${{ secrets[matrix.secret_var] }}
-          script: |
-            TARGET_DIR="${{ vars[matrix.path_var] || '/workspace/docker/sokuim-server' }}"
-            if [ -d "$TARGET_DIR" ]; then
-              sudo chown -R $USER:$USER "$TARGET_DIR"
-              chmod -R u+w "$TARGET_DIR"
-            fi
-          source: "app/${{ matrix.service }}/docker-compose.${{ matrix.service }}.yml,app/${{ matrix.service }}/etc"
-          target: "${{ vars[matrix.path_var] || '/workspace/docker/sokuim-server' }}"
-          strip_components: 2
+          build-args: |
+            GATEWAY_PORT=${{ vars.PORT_GATEWAY || 8080 }}
       - name: release to prod
         if: ${{ matrix.changed == 'true' }}
         uses: appleboy/ssh-action@v1.0.3
@@ -231,7 +203,11 @@ jobs:
               echo "Error: Download app/${SERVICE}/docker-compose.yml failed or file is empty!"
               exit 1
             fi
-            
+
+            # 替换端口变量
+            GATEWAY_PORT="${{ vars.PORT_GATEWAY || 8080 }}"
+            sed -i "s/\${GATEWAY_PORT}/${GATEWAY_PORT}/g" "$COMPOSE_FILE"
+
             echo "Content of $COMPOSE_FILE:"
             cat "$COMPOSE_FILE"
             
