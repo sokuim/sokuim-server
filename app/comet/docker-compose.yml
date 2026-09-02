@@ -6,7 +6,7 @@ services:
     container_name: sokuim-comet
     restart: always
     ports:
-      - "${COMET_PORT}:6070"
+      - "${COMET_PORT}:8082"
     volumes:
       - /etc/localtime:/etc/localtime:ro # timezone
     healthcheck:
