@@ -9,19 +9,30 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"time"
+	"flag"
+	"sokuim/sokuim-server/app/comet/internal/config"
+	"sokuim/sokuim-server/app/comet/internal/server"
+
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/service"
 )
 
+var configFile = flag.String("f", "etc/comet.yaml", "the config file")
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "sokuim.comet-002: "+time.Now().String())
-	})
-	log.Println("comet start at :6070")
-	err := http.ListenAndServe(":6070", nil)
-	if err != nil {
-		panic(err)
-	}
+	flag.Parse()
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
+
+	group := service.NewServiceGroup()
+	defer group.Stop()
+
+	port := c.Port
+	health := server.NewHealth(port)
+	group.Add(health)
+
+	comet := server.NewComet()
+	group.Add(comet)
+
+	group.Start()
 }

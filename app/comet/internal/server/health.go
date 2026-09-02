@@ -3,8 +3,8 @@
 // Copyright 2026 sokuim.com - All Rights Reserved
 // Link https://www.sokuim.com
 // Author stiffer.chen <stiffer@sokuim.com>
-// Created 2026-09-02 10:30:07
-// Modified 2026-09-02 10:30:07
+// Created 2026-09-03 00:13:54
+// Modified 2026-09-03 00:13:54
 
 package server
 
@@ -57,7 +57,7 @@ func (h *Health) Start() {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
-	log.Printf("job health check on port %d", h.port)
+	log.Printf("comet health check on port %d", h.port)
 
 	h.once.Do(func() {
 		if err := h.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
