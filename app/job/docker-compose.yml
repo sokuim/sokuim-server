@@ -1,16 +1,15 @@
-version: '3.8'
-
 services:
   job:
     image: ghcr.io/sokuim/sokuim-server/job:latest
     container_name: sokuim-job
-    restart: always
+    restart: unless-stopped
     ports:
-      - "6073:6073"
+      - "${JOB_PORT}:8081"
     volumes:
-      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m"
-        max-file: "3"
+      - /etc/localtime:/etc/localtime:ro # async timezone
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/common/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

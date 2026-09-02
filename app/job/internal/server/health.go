@@ -77,7 +77,7 @@ func (h *Health) Start() {
 }
 
 func (h *Health) Stop() {
-	if h.server != nil {
+	if h.server == nil {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

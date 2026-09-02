@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   gateway:
     image: ghcr.io/sokuim/sokuim-server/gateway:latest
     container_name: sokuim-gateway
-    restart: always
+    restart: unless-stopped
     ports:
       - "${GATEWAY_PORT}:8080"
     volumes:

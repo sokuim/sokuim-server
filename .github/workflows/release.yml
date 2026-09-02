@@ -109,7 +109,7 @@ jobs:
             secret_var: RELEASE_SSH_GATEWAY
             changed: ${{ needs.check-changes.outputs.gateway }}
           - service: job
-            port: 6073
+            port: ${{ vars.PORT_JOB || 8081 }}
             dockerfile: ./app/job/Dockerfile
             host_var: RELEASE_HOST_JOB
             path_var: RELEASE_PATH_JOB
@@ -209,6 +209,9 @@ jobs:
             # 替换端口变量
             GATEWAY_PORT="${{ vars.PORT_GATEWAY || 8080 }}"
             sed -i "s/\${GATEWAY_PORT}/${GATEWAY_PORT}/g" "$COMPOSE_FILE"
+            
+            JOB_PORT="${{ vars.PORT_JOB || 8081 }}"
+            sed -i "s/\${JOB_PORT}/${JOB_PORT}/g" "$COMPOSE_FILE"
 
             echo "Content of $COMPOSE_FILE:"
             cat "$COMPOSE_FILE"

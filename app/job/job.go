@@ -31,5 +31,8 @@ func main() {
 	health := server.NewHealth(port)
 	group.Add(health)
 
+	job := server.NewJob()
+	group.Add(job)
+
 	group.Start()
 }
