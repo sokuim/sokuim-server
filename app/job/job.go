@@ -9,19 +9,27 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"time"
+	"flag"
+	"sokuim/sokuim-server/app/job/internal/config"
+	"sokuim/sokuim-server/app/job/internal/server"
+
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/service"
 )
 
+var configFile = flag.String("f", "etc/job.yaml", "the config file")
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, Job-001: "+time.Now().String())
-	})
-	log.Println("Listening on :6073")
-	err := http.ListenAndServe(":6073", nil)
-	if err != nil {
-		panic(err)
-	}
+	flag.Parse()
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
+
+	group := service.NewServiceGroup()
+	defer group.Stop()
+
+	port := c.Port
+	health := server.NewHealth(port)
+	group.Add(health)
+
+	group.Start()
 }
