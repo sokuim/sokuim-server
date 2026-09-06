@@ -94,7 +94,7 @@ jobs:
             secret_var: RELEASE_SSH_COMET
             changed: ${{ needs.check-changes.outputs.comet }}
           - service: core
-            port: 6071
+            port: ${{ vars.PORT_CORE || 8083 }}
             dockerfile: ./app/core/Dockerfile
             host_var: RELEASE_HOST_CORE
             path_var: RELEASE_PATH_CORE
@@ -219,7 +219,7 @@ jobs:
             COMET_PORT="${{ vars.PORT_COMET || 8082 }}"
             sed -i "s/\${COMET_PORT}/${COMET_PORT}/g" "$COMPOSE_FILE"
             
-            CORE_PORT="${{ vars.PORT_CORE }} || 8083"
+            CORE_PORT="${{ vars.PORT_CORE || 8083 }}"
             sed -i "s/\${CORE_PORT}/${CORE_PORT}/g" "$COMPOSE_FILE"
 
             echo "Content of $COMPOSE_FILE:"
