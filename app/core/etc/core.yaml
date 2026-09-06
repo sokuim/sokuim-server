@@ -1,0 +1,9 @@
+Name: sokuim.core.rpc
+ListenOn: 0.0.0.0:8083
+
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: core.rpc
+  User: root
+  Pass: admin

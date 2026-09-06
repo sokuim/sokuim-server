@@ -153,6 +153,8 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
+          build-args: |
+            ETCD_HOST=${{ vars.ETCD_HOST || '127.0.0.1:2379' }}
           tags: |
             ${{ env.IMAGE_BASE }}:latest
             ${{ env.IMAGE_BASE }}:${{ env.SHORT_SHA }}
@@ -216,6 +218,9 @@ jobs:
             
             COMET_PORT="${{ vars.PORT_COMET || 8082 }}"
             sed -i "s/\${COMET_PORT}/${COMET_PORT}/g" "$COMPOSE_FILE"
+            
+            CORE_PORT="${{ vars.PORT_CORE }} || 8083"
+            sed -i "s/\${CORE_PORT}/${CORE_PORT}/g" "$COMPOSE_FILE"
 
             echo "Content of $COMPOSE_FILE:"
             cat "$COMPOSE_FILE"

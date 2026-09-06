@@ -1,0 +1,114 @@
+# infra.yml - 基础设施服务部署流水线（etcd / mysql / redis ...）
+# 纯部署（无构建、无镜像推送），与 release.yml（自研 Go 服务）分离。
+#
+# 为什么采用手动触发（workflow_dispatch）而非 push 自动触发？
+#   1. 变更频率低：基础设施的 docker-compose 配置（固定镜像/端口）极少改动，
+#      挂自动触发只会徒增误触发风险；
+#   2. 有状态、破坏性高：etcd / mysql / redis 是常驻的底层服务，误改配置会波及全局，
+#      需人工确认并挑选低峰、备份后再部署，手动触发等于多一层人为把关；
+#   3. 无构建环节：不 build / push 镜像，仅“拉编排文件 + docker compose up”，
+#      天然是按需触发一次，而非“代码变了就该自动跑”。
+#
+# 新增基础设施服务的步骤：
+#   1. 在 deploy/<service>/docker-compose.yml 放置编排文件
+#   2. 在下方 matrix.include 追加一行（host_var/user_var/path_var/secret_var）
+#   3. 在 workflow_dispatch.inputs.service.options 追加一个选项
+#   4. 在 GitHub 仓库 Settings → Secrets/Variables 配置对应主机/账号/SSH 私钥
+
+name: sokuim infra deploy        # 流水线名称，显示在 GitHub Actions 列表页
+
+on:                              # 触发条件
+  workflow_dispatch:             # 仅手动触发（Actions 页面点击 "Run workflow"）
+    inputs:                      # 手动触发时弹出的表单参数
+      service:
+        description: '要部署的基础设施服务'
+        type: choice             # 下拉选择框
+        required: true
+        default: 'etcd'
+        options:                 # 可选值列表
+          - all                  # 部署所有服务
+          - etcd
+          # - mysql   # 后续新增
+          # - redis
+
+jobs:                            # 任务集合
+  deploy-infra:                  # 任务 ID（可自定义）
+    runs-on: ubuntu-latest       # 运行环境（GitHub 托管的 Ubuntu 虚拟机）
+    strategy:                    # 执行策略
+      fail-fast: false           # 单个服务部署失败不中断其他服务（deploy all 时）
+      matrix:                    # 矩阵：对 include 中每个条目各跑一遍本 job
+        include:
+          - service: etcd                       # 服务标识，对应 deploy/<service>/ 目录与下拉选项
+            host_var: RELEASE_HOST_ETCD         # 变量名：服务器主机地址（仓库 Variables 中配置）
+            user_var: RELEASE_USER_ETCD         # 变量名：SSH 登录用户名
+            path_var: RELEASE_PATH_ETCD         # 变量名：服务器上的部署目录
+            secret_var: RELEASE_SSH_ETCD        # Secret 名：SSH 私钥（仓库 Secrets 中配置）
+          # 后续新增服务时在此追加一行，例如：
+          # - service: mysql
+          #   host_var: RELEASE_HOST_MYSQL
+          #   user_var: RELEASE_USER_MYSQL
+          #   path_var: RELEASE_PATH_MYSQL
+          #   secret_var: RELEASE_SSH_MYSQL
+
+    steps:                        # 执行步骤（按顺序执行）
+      - name: Checkout code
+        uses: actions/checkout@v4  # 拉取当前仓库代码到运行环境
+
+      # 仅部署用户在下拉框中选择的服务（或 all）
+      - name: Deploy ${{ matrix.service }}
+        if: ${{ inputs.service == 'all' || inputs.service == matrix.service }}  # 过滤掉未选中的服务
+        uses: appleboy/ssh-action@v1.0.3  # 通过 SSH 在远程服务器上执行命令
+        with:
+          host: ${{ vars[matrix.host_var] }}        # 从 Variables 读取服务器地址
+          username: ${{ vars[matrix.user_var] }}    # 从 Variables 读取登录用户名
+          key: ${{ secrets[matrix.secret_var] }}    # 从 Secrets 读取 SSH 私钥
+          script: |                                 # 在远程服务器上执行的脚本
+            set -e # 出错即停止
+
+            SERVICE="${{ matrix.service }}"
+            RAW_REPO="${{ github.repository }}"
+            # 服务在服务器上的存放目录（默认 /workspace/docker/sokuim-infra）
+            WORK_DIR="${{ vars[matrix.path_var] || '/workspace/docker/sokuim-infra' }}"
+            COMPOSE_FILE="docker-compose.${SERVICE}.yml"
+
+            echo "=========================================="
+            echo "Deploying Service: $SERVICE"
+            echo "Work Directory: $WORK_DIR"
+            echo "Compose File: $COMPOSE_FILE"
+            echo "=========================================="
+
+            # 检查、创建工作目录
+            if [ ! -d "$WORK_DIR" ]; then
+              echo "Release path is not exist. create: $WORK_DIR"
+              sudo mkdir -p "$WORK_DIR"
+              sudo chown -R "$USER:$USER" "$WORK_DIR"
+              echo "Release path created successful!"
+            else
+              echo "Release path exists: $WORK_DIR"
+            fi
+            cd "$WORK_DIR"
+
+            # 下载 docker-compose 文件
+            echo "Downloading docker-compose file for $SERVICE from GitHub..."
+            curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://raw.githubusercontent.com/${RAW_REPO}/${{ github.sha }}/deploy/${SERVICE}/docker-compose.yml" \
+              -o "$COMPOSE_FILE"
+
+            # 下载校验（curl -f 已拦截 404，这里兜底空文件场景）
+            if [ ! -s "$COMPOSE_FILE" ]; then
+              echo "Error: Download deploy/${SERVICE}/docker-compose.yml failed or file is empty!"
+              exit 1
+            fi
+
+            echo "Content of $COMPOSE_FILE:"
+            cat "$COMPOSE_FILE"
+
+            # 拉取镜像并启动
+            echo "Pulling latest image for $SERVICE..."
+            docker compose -f "$COMPOSE_FILE" pull
+            docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+
+            # 清理旧镜像
+            docker image prune -f
+
+            echo "Deployment for $SERVICE completed successful!"

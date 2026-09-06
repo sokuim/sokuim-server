@@ -6,12 +6,12 @@ services:
     container_name: sokuim-core
     restart: always
     ports:
-      - "6071:6071"
+      - "${CORE_PORT}:8083"
     volumes:
-      # - ./etc:/app/etc # 挂载配置文件目录(根据实际情况调整)
       - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m" # 单个文件最大 100M
-        max-file: "3" # 最多保留3个日志文件
+    healthcheck:
+      test: [ "CMD", "grpc_health_probe", "-addr=localhost:8083" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
