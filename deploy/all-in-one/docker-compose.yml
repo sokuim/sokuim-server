@@ -1,0 +1,119 @@
+# sokuim 一体化编排：单镜像（本地构建）+ etcd 一键启停
+# 与 release.yml（分步发布）、infra.yml（部署基础设施）并存，互不影响。
+#
+# 本地编译打包：docker compose up -d --build
+#   - 5 个容器共用同一个本地构建的镜像（sokuim-all-in-one:latest）
+#   - 各自用 command 指定跑哪个进程
+#   - 不再依赖 GHCR 上的 4 个独立镜像
+#
+# 端口默认 8080/8081/8082/8083/2379，宿主机侧端口可在同目录 .env 中覆盖。
+# 未设置 container_name，避免与 release.yml / infra.yml 单独部署的容器冲突。
+
+networks:
+  sokuim-net:
+    driver: bridge
+
+x-sokuim-image: &sokuim-image
+  image: sokuim-all-in-one:latest
+  build:
+    context: ../..
+    dockerfile: deploy/all-in-one/Dockerfile
+
+services:
+  etcd:
+    <<: *sokuim-image
+    restart: always
+    command: ["etcd-entrypoint.sh"]
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    environment:
+      # 注意：不能用 ETCD_ 前缀（etcd 官方二进制会把这些当成自己的 flag 环境变量，
+      # 与 --data-dir 等命令行参数冲突导致 fatal）。这里用 SOKUIM_ 前缀。
+      - SOKUIM_ROOT_PASSWORD=admin
+      - SOKUIM_ADVERTISE_URL=http://etcd:2379
+      - SOKUIM_DATA_DIR=/var/lib/etcd
+    volumes:
+      - etcd-data:/var/lib/etcd
+    healthcheck:
+      test: [ "CMD", "etcdctl", "--endpoints=http://127.0.0.1:2379", "--user", "root:admin", "endpoint", "health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - sokuim-net
+
+  core:
+    <<: *sokuim-image
+    restart: always
+    command: ["./core", "-f", "etc/core.yaml"]
+    depends_on:
+      etcd:
+        condition: service_healthy
+    ports:
+      - "${CORE_PORT:-8083}:8083"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    healthcheck:
+      test: [ "CMD", "grpc_health_probe", "-addr=localhost:8083" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - sokuim-net
+
+  gateway:
+    <<: *sokuim-image
+    restart: unless-stopped
+    command: ["./gateway", "-f", "etc/gateway.yaml"]
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/common/healthz || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - sokuim-net
+
+  job:
+    <<: *sokuim-image
+    restart: unless-stopped
+    command: ["./job", "-f", "etc/job.yaml"]
+    ports:
+      - "${JOB_PORT:-8081}:8081"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8081/common/healthz || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - sokuim-net
+
+  comet:
+    <<: *sokuim-image
+    restart: always
+    command: ["./comet", "-f", "etc/comet.yaml"]
+    ports:
+      - "${COMET_PORT:-8082}:8082"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 同步宿主机时区
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8082/common/healthz || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - sokuim-net
+
+volumes:
+  etcd-data:
