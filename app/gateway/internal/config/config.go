@@ -4,7 +4,8 @@ import "github.com/zeromicro/go-zero/rest"
 
 type Config struct {
 	rest.RestConf
-	LoggerConfig LoggerConfig
+	LoggerConfig     LoggerConfig
+	MqProducerConfig MqProducerConfig
 }
 
 type LoggerConfig struct {
@@ -14,4 +15,8 @@ type LoggerConfig struct {
 	RotateSize   uint
 	RotateLimit  uint
 	RotateExpire uint
+}
+
+type MqProducerConfig struct {
+	Brokers []string
 }

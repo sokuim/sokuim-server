@@ -36,43 +36,43 @@ func NewLogger(conf Config) *Logger {
 }
 
 func (l *Logger) Info(ctx context.Context, args ...interface{}) {
-	l.log.Info(ctx, args)
+	l.log.Info(ctx, args...)
 }
 
 func (l *Logger) Infof(ctx context.Context, format string, args ...interface{}) {
-	l.log.Infof(ctx, format, args)
+	l.log.Infof(ctx, format, args...)
 }
 
 func (l *Logger) Error(ctx context.Context, args ...interface{}) {
-	l.log.Error(ctx, args)
+	l.log.Error(ctx, args...)
 }
 
 func (l *Logger) Errorf(ctx context.Context, format string, args ...interface{}) {
-	l.log.Errorf(ctx, format, args)
+	l.log.Errorf(ctx, format, args...)
 }
 
 func (l *Logger) Warning(ctx context.Context, args ...interface{}) {
-	l.log.Warning(ctx, args)
+	l.log.Warning(ctx, args...)
 }
 
 func (l *Logger) Warningf(ctx context.Context, format string, args ...interface{}) {
-	l.log.Warningf(ctx, format, args)
+	l.log.Warningf(ctx, format, args...)
 }
 
 func (l *Logger) Notice(ctx context.Context, args ...interface{}) {
-	l.log.Notice(ctx, args)
+	l.log.Notice(ctx, args...)
 }
 
 func (l *Logger) Noticef(ctx context.Context, format string, args ...interface{}) {
-	l.log.Noticef(ctx, format, args)
+	l.log.Noticef(ctx, format, args...)
 }
 
 func (l *Logger) Debug(ctx context.Context, args ...interface{}) {
-	l.log.Debug(ctx, args)
+	l.log.Debug(ctx, args...)
 }
 
 func (l *Logger) Debugf(ctx context.Context, format string, args ...interface{}) {
-	l.log.Debugf(ctx, format, args)
+	l.log.Debugf(ctx, format, args...)
 }
 
 func newLogger(conf Config) (log *glog.Logger, err error) {
