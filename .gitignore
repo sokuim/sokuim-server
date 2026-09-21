@@ -3,6 +3,7 @@ tmp
 app/gateway/etc/gateway.yaml
 app/job/etc/job.yaml
 app/comet/etc/comet.yaml
+/log
 
 .claude
 AGENTS.md

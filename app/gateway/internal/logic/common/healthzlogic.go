@@ -28,5 +28,6 @@ func (l *HealthzLogic) Healthz(req *types.CommonHealthReq) (resp *types.CommonHe
 	resp = &types.CommonHealthResp{
 		Status: "ok",
 	}
+	l.svcCtx.Logger.Info(l.ctx, "good")
 	return
 }
