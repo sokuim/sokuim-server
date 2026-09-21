@@ -27,11 +27,7 @@ func main() {
 	group := service.NewServiceGroup()
 	defer group.Stop()
 
-	port := c.Port
-	health := server.NewHealth(port)
-	group.Add(health)
-
-	comet := server.NewComet()
+	comet := server.NewComet(c)
 	group.Add(comet)
 
 	group.Start()

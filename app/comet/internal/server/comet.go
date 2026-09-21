@@ -8,18 +8,50 @@
 
 package server
 
-import "log"
+import (
+	"fmt"
 
-type Comet struct{}
+	"github.com/zeromicro/go-zero/core/service"
+	"github.com/zeromicro/go-zero/zrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
-func NewComet() *Comet {
-	return &Comet{}
+	"sokuim/sokuim-server/app/comet/internal/config"
+	cometServer "sokuim/sokuim-server/app/comet/internal/server/comet"
+	"sokuim/sokuim-server/app/comet/internal/svc"
+	"sokuim/sokuim-server/app/comet/pb"
+)
+
+type Comet struct {
+	conf      config.Config
+	svcCtx    *svc.ServiceContext
+	rpcServer *zrpc.RpcServer
+}
+
+func NewComet(conf config.Config) *Comet {
+	svcCtx := svc.NewServiceContext(conf)
+	return &Comet{
+		conf:   conf,
+		svcCtx: svcCtx,
+	}
 }
 
 func (c *Comet) Start() {
-	log.Printf("Comet starting...")
+	s := zrpc.MustNewServer(c.conf.RpcServerConf, func(grpcServer *grpc.Server) {
+		pb.RegisterCometServer(grpcServer, cometServer.NewCometServer(c.svcCtx))
+		if c.conf.Mode == service.DevMode || c.conf.Mode == service.TestMode {
+			reflection.Register(grpcServer)
+		}
+	})
+	c.rpcServer = s
+	fmt.Printf("Starting comet.rpc server at %s...\n", c.conf.ListenOn)
+	s.Start()
 }
 
 func (c *Comet) Stop() {
-	log.Printf("Comet stopping...")
+	fmt.Println("Comet stopping...")
+	if c.rpcServer == nil {
+		return
+	}
+	c.rpcServer.Stop()
 }

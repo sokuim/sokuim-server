@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "./pb";
+
+message CometPushCommonReq {
+  int32 op = 1;
+  bytes body = 2;
+}
+
+message CometPushCommonResp {}
+
+service Comet {
+  rpc PushMsgCommon (CometPushCommonReq) returns (CometPushCommonResp);
+}
