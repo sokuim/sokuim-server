@@ -12,4 +12,14 @@ import "github.com/zeromicro/go-zero/zrpc"
 
 type Config struct {
 	zrpc.RpcServerConf
+	LoggerConfig LoggerConfig
+}
+
+type LoggerConfig struct {
+	Path         string
+	Folder       string
+	Stdout       bool
+	RotateSize   uint
+	RotateLimit  uint
+	RotateExpire uint
 }

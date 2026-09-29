@@ -37,6 +37,7 @@ func NewComet(conf config.Config) *Comet {
 }
 
 func (c *Comet) Start() {
+
 	s := zrpc.MustNewServer(c.conf.RpcServerConf, func(grpcServer *grpc.Server) {
 		pb.RegisterCometServer(grpcServer, cometServer.NewCometServer(c.svcCtx))
 		if c.conf.Mode == service.DevMode || c.conf.Mode == service.TestMode {
