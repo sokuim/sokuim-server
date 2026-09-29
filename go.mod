@@ -6,6 +6,7 @@ require (
 	github.com/IBM/sarama v1.60.2
 	github.com/gogf/gf/v2 v2.10.3
 	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.12.1
 	github.com/zeromicro/go-zero v1.10.3
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11

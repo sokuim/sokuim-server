@@ -3,6 +3,11 @@ syntax = "proto3";
 package pb;
 option go_package = "./pb";
 
+message CometMsgProto {
+  int32 op = 1;
+  bytes body = 2;
+}
+
 message CometPushCommonReq {
   int32 op = 1;
   bytes body = 2;

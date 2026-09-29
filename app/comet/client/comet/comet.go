@@ -14,6 +14,7 @@ import (
 )
 
 type (
+	CometMsgProto       = pb.CometMsgProto
 	CometPushCommonReq  = pb.CometPushCommonReq
 	CometPushCommonResp = pb.CometPushCommonResp
 
