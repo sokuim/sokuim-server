@@ -10,6 +10,7 @@ package server
 
 import (
 	"sokuim/sokuim-server/app/comet/internal/config"
+	"sokuim/sokuim-server/app/core/client/socket"
 	"time"
 )
 
@@ -20,5 +21,14 @@ const (
 )
 
 type Server struct {
-	conf config.Config
+	conf      config.Config
+	socketRPC socket.Socket
+}
+
+func NewServer(conf config.Config, socketRPC socket.Socket) *Server {
+	s := &Server{
+		conf:      conf,
+		socketRPC: socketRPC,
+	}
+	return s
 }

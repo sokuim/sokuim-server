@@ -10,6 +10,9 @@ package server
 
 import (
 	"fmt"
+	"math/rand"
+	"runtime"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -37,7 +40,14 @@ func NewComet(conf config.Config) *Comet {
 }
 
 func (c *Comet) Start() {
-
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	cs := NewServer(c.conf, c.svcCtx.SocketRPC)
+	if err := c.initTCP(cs); err != nil {
+		panic(err)
+	}
+	if err := c.initWebSocket(cs); err != nil {
+		panic(err)
+	}
 	s := zrpc.MustNewServer(c.conf.RpcServerConf, func(grpcServer *grpc.Server) {
 		pb.RegisterCometServer(grpcServer, cometServer.NewCometServer(c.svcCtx))
 		if c.conf.Mode == service.DevMode || c.conf.Mode == service.TestMode {
@@ -47,6 +57,14 @@ func (c *Comet) Start() {
 	c.rpcServer = s
 	fmt.Printf("Starting comet.rpc server at %s...\n", c.conf.ListenOn)
 	s.Start()
+}
+
+func (c *Comet) initTCP(server *Server) error {
+	return InitTCP(server, c.conf.TcpConfig.Bind, runtime.NumCPU())
+}
+
+func (c *Comet) initWebSocket(server *Server) error {
+	return InitWebsocket(server, c.conf.WebsocketConfig.Bind, runtime.NumCPU())
 }
 
 func (c *Comet) Stop() {

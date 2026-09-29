@@ -12,7 +12,10 @@ import "github.com/zeromicro/go-zero/zrpc"
 
 type Config struct {
 	zrpc.RpcServerConf
-	LoggerConfig LoggerConfig
+	CoreRpcConfig   zrpc.RpcClientConf
+	LoggerConfig    LoggerConfig
+	WebsocketConfig WebsocketConfig
+	TcpConfig       TcpConfig
 }
 
 type LoggerConfig struct {
@@ -22,4 +25,23 @@ type LoggerConfig struct {
 	RotateSize   uint
 	RotateLimit  uint
 	RotateExpire uint
+}
+
+type TcpConfig struct {
+	Bind         []string
+	SndBuf       int
+	RcvBuf       int
+	Keepalive    bool
+	Reader       int
+	ReadBuf      int
+	ReadBufSize  int
+	Writer       int
+	WriteBuf     int
+	WriteBufSize int
+}
+
+type WebsocketConfig struct {
+	Bind    []string
+	TlsOpen bool
+	TlsBind []string
 }
