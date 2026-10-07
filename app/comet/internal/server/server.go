@@ -14,6 +14,7 @@ import (
 	"os"
 	"sokuim/sokuim-server/app/comet/internal/config"
 	"sokuim/sokuim-server/app/core/client/socket"
+	"sokuim/sokuim-server/pkg/logger"
 	"time"
 
 	"github.com/cespare/xxhash/v2"
@@ -33,15 +34,17 @@ type Server struct {
 	serverID    string
 	round       *Round
 	done        chan struct{} // 用于通知后台 goroutine（如 onlineproc）在进程退出时优雅停止。
+	log         *logger.Logger
 }
 
-func NewServer(conf config.Config, socketRPC socket.Socket) *Server {
+func NewServer(conf config.Config, socketRPC socket.Socket, log *logger.Logger) *Server {
 	s := &Server{
 		conf:      conf,
 		round:     NewRound(conf),
 		socketRPC: socketRPC,
 		serverID:  getHostName(),
 		done:      make(chan struct{}),
+		log:       log,
 	}
 	// init bucket
 	s.buckets = make([]*Bucket, conf.BucketConfig.Size)

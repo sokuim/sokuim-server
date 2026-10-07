@@ -41,7 +41,7 @@ func NewComet(conf config.Config) *Comet {
 
 func (c *Comet) Start() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-	cs := NewServer(c.conf, c.svcCtx.SocketRPC)
+	cs := NewServer(c.conf, c.svcCtx.SocketRPC, c.svcCtx.Log)
 	if err := c.initTCP(cs); err != nil {
 		panic(err)
 	}
@@ -60,7 +60,7 @@ func (c *Comet) Start() {
 }
 
 func (c *Comet) initTCP(server *Server) error {
-	return InitTCP(server, c.conf.TcpConfig.Bind, runtime.NumCPU())
+	return InitTCP(server, c.conf.TcpConfig.Bind, runtime.NumCPU(), c.svcCtx.Log)
 }
 
 func (c *Comet) initWebSocket(server *Server) error {

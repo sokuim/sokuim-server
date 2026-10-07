@@ -9,7 +9,7 @@
 package config
 
 import (
-	xtime "time"
+	xtime "sokuim/sokuim-server/pkg/time"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
