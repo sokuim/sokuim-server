@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type SocketClient interface {
 	// Connect valid socket connect
 	Connect(ctx context.Context, in *SocketConnectReq, opts ...grpc.CallOption) (*SocketConnectResp, error)
+	RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error)
 }
 
 type socketClient struct {
@@ -39,12 +40,22 @@ func (c *socketClient) Connect(ctx context.Context, in *SocketConnectReq, opts .
 	return out, nil
 }
 
+func (c *socketClient) RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error) {
+	out := new(SocketOnlineResp)
+	err := c.cc.Invoke(ctx, "/pb.Socket/RenewOnline", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SocketServer is the server API for Socket service.
 // All implementations must embed UnimplementedSocketServer
 // for forward compatibility
 type SocketServer interface {
 	// Connect valid socket connect
 	Connect(context.Context, *SocketConnectReq) (*SocketConnectResp, error)
+	RenewOnline(context.Context, *SocketOnlineReq) (*SocketOnlineResp, error)
 	mustEmbedUnimplementedSocketServer()
 }
 
@@ -54,6 +65,9 @@ type UnimplementedSocketServer struct {
 
 func (UnimplementedSocketServer) Connect(context.Context, *SocketConnectReq) (*SocketConnectResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedSocketServer) RenewOnline(context.Context, *SocketOnlineReq) (*SocketOnlineResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewOnline not implemented")
 }
 func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
 
@@ -86,6 +100,24 @@ func _Socket_Connect_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Socket_RenewOnline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SocketOnlineReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).RenewOnline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Socket/RenewOnline",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).RenewOnline(ctx, req.(*SocketOnlineReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Socket_ServiceDesc is the grpc.ServiceDesc for Socket service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +128,10 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Connect",
 			Handler:    _Socket_Connect_Handler,
+		},
+		{
+			MethodName: "RenewOnline",
+			Handler:    _Socket_RenewOnline_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

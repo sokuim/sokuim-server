@@ -8,7 +8,11 @@
 
 package config
 
-import "github.com/zeromicro/go-zero/zrpc"
+import (
+	xtime "time"
+
+	"github.com/zeromicro/go-zero/zrpc"
+)
 
 type Config struct {
 	zrpc.RpcServerConf
@@ -16,6 +20,8 @@ type Config struct {
 	LoggerConfig    LoggerConfig
 	WebsocketConfig WebsocketConfig
 	TcpConfig       TcpConfig
+	BucketConfig    BucketConfig
+	ProtocolConfig  ProtocolConfig
 }
 
 type LoggerConfig struct {
@@ -44,4 +50,20 @@ type WebsocketConfig struct {
 	Bind    []string
 	TlsOpen bool
 	TlsBind []string
+}
+
+type BucketConfig struct {
+	Size          int
+	Channel       int
+	Room          int
+	RoutineAmount uint64
+	RoutineSize   int
+}
+
+type ProtocolConfig struct {
+	Timer            int
+	TimerSize        int
+	SrvProto         int
+	CliProto         int
+	HandshakeTimeout xtime.Duration
 }

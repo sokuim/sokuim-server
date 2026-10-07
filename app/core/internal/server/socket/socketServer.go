@@ -28,3 +28,8 @@ func (s *SocketServer) Connect(ctx context.Context, in *pb.SocketConnectReq) (*p
 	l := socketlogic.NewConnectLogic(ctx, s.svcCtx)
 	return l.Connect(in)
 }
+
+func (s *SocketServer) RenewOnline(ctx context.Context, in *pb.SocketOnlineReq) (*pb.SocketOnlineResp, error) {
+	l := socketlogic.NewRenewOnlineLogic(ctx, s.svcCtx)
+	return l.RenewOnline(in)
+}

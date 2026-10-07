@@ -15,6 +15,13 @@ message CometPushCommonReq {
 
 message CometPushCommonResp {}
 
+message CometBroadcastRoomReq {
+  string roomID = 1;
+  CometMsgProto proto = 2;
+}
+
+message CometBroadcastRoomResp {}
+
 service Comet {
   rpc PushMsgCommon (CometPushCommonReq) returns (CometPushCommonResp);
 }

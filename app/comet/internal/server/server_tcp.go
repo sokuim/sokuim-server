@@ -41,8 +41,40 @@ func InitTCP(s *Server, addrs []string, accept int) (err error) {
 			log.Errorf(ctx, "net.ListenTCP(tcp, %s) error(%v)", bind, err)
 			return
 		}
-		log.Infof(ctx, "start tcp listen: %s", bind)
+		for i := 0; i < accept; i++ {
+			go acceptTCP(s, listener, log)
+		}
 	}
 	log.Info(ctx, listener)
 	return
+}
+
+func acceptTCP(s *Server, lis *net.TCPListener, log *logger.Logger) {
+	var (
+		conn *net.TCPConn
+		err  error
+		r    int
+	)
+	for {
+		if conn, err = lis.AcceptTCP(); err != nil {
+			return
+		}
+		if err = conn.SetKeepAlive(s.conf.TcpConfig.Keepalive); err != nil {
+			return
+		}
+		if err = conn.SetReadBuffer(s.conf.TcpConfig.RcvBuf); err != nil {
+			return
+		}
+		if err = conn.SetWriteBuffer(s.conf.TcpConfig.SndBuf); err != nil {
+			return
+		}
+		go serveTCP(s, conn, r, log)
+		if r++; r == maxInt {
+			r = 0
+		}
+	}
+}
+
+func serveTCP(s *Server, conn *net.TCPConn, r int, log *logger.Logger) {
+	log.Debug(context.Background(), "serveTCP", conn.RemoteAddr())
 }

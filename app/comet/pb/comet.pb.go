@@ -168,6 +168,99 @@ func (*CometPushCommonResp) Descriptor() ([]byte, []int) {
 	return file_comet_proto_rawDescGZIP(), []int{2}
 }
 
+type CometBroadcastRoomReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RoomID string         `protobuf:"bytes,1,opt,name=roomID,proto3" json:"roomID,omitempty"`
+	Proto  *CometMsgProto `protobuf:"bytes,2,opt,name=proto,proto3" json:"proto,omitempty"`
+}
+
+func (x *CometBroadcastRoomReq) Reset() {
+	*x = CometBroadcastRoomReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_comet_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CometBroadcastRoomReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CometBroadcastRoomReq) ProtoMessage() {}
+
+func (x *CometBroadcastRoomReq) ProtoReflect() protoreflect.Message {
+	mi := &file_comet_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CometBroadcastRoomReq.ProtoReflect.Descriptor instead.
+func (*CometBroadcastRoomReq) Descriptor() ([]byte, []int) {
+	return file_comet_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CometBroadcastRoomReq) GetRoomID() string {
+	if x != nil {
+		return x.RoomID
+	}
+	return ""
+}
+
+func (x *CometBroadcastRoomReq) GetProto() *CometMsgProto {
+	if x != nil {
+		return x.Proto
+	}
+	return nil
+}
+
+type CometBroadcastRoomResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *CometBroadcastRoomResp) Reset() {
+	*x = CometBroadcastRoomResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_comet_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CometBroadcastRoomResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CometBroadcastRoomResp) ProtoMessage() {}
+
+func (x *CometBroadcastRoomResp) ProtoReflect() protoreflect.Message {
+	mi := &file_comet_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CometBroadcastRoomResp.ProtoReflect.Descriptor instead.
+func (*CometBroadcastRoomResp) Descriptor() ([]byte, []int) {
+	return file_comet_proto_rawDescGZIP(), []int{4}
+}
+
 var File_comet_proto protoreflect.FileDescriptor
 
 var file_comet_proto_rawDesc = []byte{
@@ -180,13 +273,20 @@ var file_comet_proto_rawDesc = []byte{
 	0x6f, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x02, 0x6f, 0x70, 0x12, 0x12, 0x0a, 0x04,
 	0x62, 0x6f, 0x64, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x62, 0x6f, 0x64, 0x79,
 	0x22, 0x15, 0x0a, 0x13, 0x43, 0x6f, 0x6d, 0x65, 0x74, 0x50, 0x75, 0x73, 0x68, 0x43, 0x6f, 0x6d,
-	0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x32, 0x49, 0x0a, 0x05, 0x43, 0x6f, 0x6d, 0x65, 0x74,
-	0x12, 0x40, 0x0a, 0x0d, 0x50, 0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6d, 0x6d, 0x6f,
-	0x6e, 0x12, 0x16, 0x2e, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x65, 0x74, 0x50, 0x75, 0x73, 0x68,
-	0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x1a, 0x17, 0x2e, 0x70, 0x62, 0x2e, 0x43,
-	0x6f, 0x6d, 0x65, 0x74, 0x50, 0x75, 0x73, 0x68, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65,
-	0x73, 0x70, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x22, 0x58, 0x0a, 0x15, 0x43, 0x6f, 0x6d, 0x65, 0x74,
+	0x42, 0x72, 0x6f, 0x61, 0x64, 0x63, 0x61, 0x73, 0x74, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x71,
+	0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x6f, 0x6d, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x72, 0x6f, 0x6f, 0x6d, 0x49, 0x44, 0x12, 0x27, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d,
+	0x65, 0x74, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x22, 0x18, 0x0a, 0x16, 0x43, 0x6f, 0x6d, 0x65, 0x74, 0x42, 0x72, 0x6f, 0x61, 0x64, 0x63,
+	0x61, 0x73, 0x74, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x32, 0x49, 0x0a, 0x05, 0x43,
+	0x6f, 0x6d, 0x65, 0x74, 0x12, 0x40, 0x0a, 0x0d, 0x50, 0x75, 0x73, 0x68, 0x4d, 0x73, 0x67, 0x43,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x12, 0x16, 0x2e, 0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x65, 0x74,
+	0x50, 0x75, 0x73, 0x68, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x1a, 0x17, 0x2e,
+	0x70, 0x62, 0x2e, 0x43, 0x6f, 0x6d, 0x65, 0x74, 0x50, 0x75, 0x73, 0x68, 0x43, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x2f, 0x70, 0x62, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -201,20 +301,23 @@ func file_comet_proto_rawDescGZIP() []byte {
 	return file_comet_proto_rawDescData
 }
 
-var file_comet_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_comet_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_comet_proto_goTypes = []interface{}{
-	(*CometMsgProto)(nil),       // 0: pb.CometMsgProto
-	(*CometPushCommonReq)(nil),  // 1: pb.CometPushCommonReq
-	(*CometPushCommonResp)(nil), // 2: pb.CometPushCommonResp
+	(*CometMsgProto)(nil),          // 0: pb.CometMsgProto
+	(*CometPushCommonReq)(nil),     // 1: pb.CometPushCommonReq
+	(*CometPushCommonResp)(nil),    // 2: pb.CometPushCommonResp
+	(*CometBroadcastRoomReq)(nil),  // 3: pb.CometBroadcastRoomReq
+	(*CometBroadcastRoomResp)(nil), // 4: pb.CometBroadcastRoomResp
 }
 var file_comet_proto_depIdxs = []int32{
-	1, // 0: pb.Comet.PushMsgCommon:input_type -> pb.CometPushCommonReq
-	2, // 1: pb.Comet.PushMsgCommon:output_type -> pb.CometPushCommonResp
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: pb.CometBroadcastRoomReq.proto:type_name -> pb.CometMsgProto
+	1, // 1: pb.Comet.PushMsgCommon:input_type -> pb.CometPushCommonReq
+	2, // 2: pb.Comet.PushMsgCommon:output_type -> pb.CometPushCommonResp
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_comet_proto_init() }
@@ -259,6 +362,30 @@ func file_comet_proto_init() {
 				return nil
 			}
 		}
+		file_comet_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CometBroadcastRoomReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_comet_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CometBroadcastRoomResp); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -266,7 +393,7 @@ func file_comet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_comet_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -14,9 +14,11 @@ import (
 )
 
 type (
-	CometMsgProto       = pb.CometMsgProto
-	CometPushCommonReq  = pb.CometPushCommonReq
-	CometPushCommonResp = pb.CometPushCommonResp
+	CometBroadcastRoomReq  = pb.CometBroadcastRoomReq
+	CometBroadcastRoomResp = pb.CometBroadcastRoomResp
+	CometMsgProto          = pb.CometMsgProto
+	CometPushCommonReq     = pb.CometPushCommonReq
+	CometPushCommonResp    = pb.CometPushCommonResp
 
 	Comet interface {
 		PushMsgCommon(ctx context.Context, in *CometPushCommonReq, opts ...grpc.CallOption) (*CometPushCommonResp, error)

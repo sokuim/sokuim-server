@@ -16,10 +16,13 @@ import (
 type (
 	SocketConnectReq  = pb.SocketConnectReq
 	SocketConnectResp = pb.SocketConnectResp
+	SocketOnlineReq   = pb.SocketOnlineReq
+	SocketOnlineResp  = pb.SocketOnlineResp
 
 	Socket interface {
 		// Connect valid socket connect
 		Connect(ctx context.Context, in *SocketConnectReq, opts ...grpc.CallOption) (*SocketConnectResp, error)
+		RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error)
 	}
 
 	defaultSocket struct {
@@ -37,4 +40,9 @@ func NewSocket(cli zrpc.Client) Socket {
 func (m *defaultSocket) Connect(ctx context.Context, in *SocketConnectReq, opts ...grpc.CallOption) (*SocketConnectResp, error) {
 	client := pb.NewSocketClient(m.cli.Conn())
 	return client.Connect(ctx, in, opts...)
+}
+
+func (m *defaultSocket) RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error) {
+	client := pb.NewSocketClient(m.cli.Conn())
+	return client.RenewOnline(ctx, in, opts...)
 }

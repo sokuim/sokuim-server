@@ -15,7 +15,17 @@ message SocketConnectResp {
   string Server = 3;
 }
 
+message SocketOnlineReq {
+  string server = 1;
+  map<string, int32> roomCount = 2;
+}
+
+message SocketOnlineResp {
+  map<string, int32> allRoomCount = 1;
+}
+
 service Socket {
   // Connect valid socket connect
   rpc Connect (SocketConnectReq) returns (SocketConnectResp);
+  rpc RenewOnline(SocketOnlineReq) returns (SocketOnlineResp);
 }
