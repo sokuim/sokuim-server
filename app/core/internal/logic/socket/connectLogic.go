@@ -2,6 +2,7 @@ package socketlogic
 
 import (
 	"context"
+	"log"
 
 	"sokuim/sokuim-server/app/core/internal/svc"
 	"sokuim/sokuim-server/app/core/pb"
@@ -25,7 +26,6 @@ func NewConnectLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ConnectLo
 
 // Connect valid socket connect
 func (l *ConnectLogic) Connect(in *pb.SocketConnectReq) (*pb.SocketConnectResp, error) {
-	// todo: add your logic here and delete this line
-
+	log.Printf("socket connect req: %v", in)
 	return &pb.SocketConnectResp{}, nil
 }

@@ -13,10 +13,41 @@ import (
 	"sokuim/sokuim-server/app/comet/pb"
 	"sokuim/sokuim-server/app/core/client/socket"
 	"sokuim/sokuim-server/pkg/strings"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
 )
+
+func (s *Server) Connect(ctx context.Context, p *pb.CometMsgProto, cookie string) (mid, key, rid string, accepts []int32, heartbeat time.Duration, err error) {
+	resp, err := s.socketRPC.Connect(ctx, &socket.SocketConnectReq{
+		Server: s.serverID,
+		Cookie: cookie,
+		Token:  p.Body,
+	})
+	if err != nil {
+		return
+	}
+	return resp.Mid, resp.Key, resp.RoomID, resp.Accepts, time.Duration(resp.Heartbeat), nil
+}
+
+func (s *Server) Disconnect(ctx context.Context, mid, key string) (err error) {
+	_, err = s.socketRPC.Disconnect(ctx, &socket.SocketDisconnectReq{
+		Server: s.serverID,
+		Mid:    mid,
+		Key:    key,
+	})
+	return
+}
+
+func (s *Server) Heartbeat(ctx context.Context, mid string, key string) (err error) {
+	_, err = s.socketRPC.Heartbeat(ctx, &socket.SocketHeartbeatReq{
+		Server: s.serverID,
+		Mid:    mid,
+		Key:    key,
+	})
+	return
+}
 
 func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map[string]int32) (allRoom map[string]int32, err error) {
 	reply, err := s.socketRPC.RenewOnline(ctx, &socket.SocketOnlineReq{

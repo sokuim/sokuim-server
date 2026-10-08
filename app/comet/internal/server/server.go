@@ -73,29 +73,11 @@ func (s *Server) RandServerHearbeat() time.Duration {
 	return (minServerHeartbeat + time.Duration(rand.Int63n(int64(maxServerHeartbeat-minServerHeartbeat))))
 }
 
-func (s *Server) Heartbeat(ctx context.Context, mid string, key string) (err error) {
-	_, err = s.socketRPC.Heartbeat(ctx, &socket.SocketHeartbeatReq{
-		Server: s.serverID,
-		Mid:    mid,
-		Key:    key,
-	})
-	return
-}
-
 func (s *Server) Close() (err error) {
 	close(s.done)
 	for _, b := range s.buckets {
 		b.Close()
 	}
-	return
-}
-
-func (s *Server) Disconnect(ctx context.Context, mid, key string) (err error) {
-	_, err = s.socketRPC.Disconnect(ctx, &socket.SocketDisconnectReq{
-		Server: s.serverID,
-		Mid:    mid,
-		Key:    key,
-	})
 	return
 }
 

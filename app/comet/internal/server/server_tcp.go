@@ -19,8 +19,6 @@ import (
 	xtime "sokuim/sokuim-server/pkg/time"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func InitTCP(s *Server, addrs []string, accept int, log *logger.Logger) (err error) {
@@ -233,8 +231,20 @@ field:
 }
 
 func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer, p *pb.CometMsgProto) (mid, key, rid string, accepts []int32, hb time.Duration, err error) {
-	mid = uuid.New().String()
-	key = uuid.New().String()
-	hb = time.Duration(5 * time.Second)
+	s.log.Info(ctx, "auth tcp")
+	for {
+		if err = p.ReadTCP(rr); err != nil {
+			s.log.Errorf(ctx, "auth tcp read error(%v)", err)
+			return
+		}
+		if p.Op == pb.OpAuth {
+			break
+		} else {
+			s.log.Errorf(ctx, "tcp request op:%d not auth", p.Op)
+		}
+	}
+	if mid, key, rid, accepts, hb, err = s.Connect(ctx, p, ""); err != nil {
+		s.log.Errorf(ctx, "auth tcp connect key: %v error(%v)", key, err)
+	}
 	return
 }

@@ -15,9 +15,11 @@ message SocketConnectReq {
 }
 
 message SocketConnectResp {
-  string MID = 1; // member ID
-  string Key = 2;
-  string Server = 3;
+  string mid = 1; // member ID
+  string key = 2;
+  string roomID = 3;
+  repeated int32 accepts = 4;
+  int64 heartbeat = 5;
 }
 
 message SocketDisconnectReq {
