@@ -10,12 +10,14 @@ package server
 
 import (
 	"context"
+	"io"
 	"net"
 	"sokuim/sokuim-server/app/comet/pb"
 	"sokuim/sokuim-server/pkg/bufio"
 	"sokuim/sokuim-server/pkg/bytes"
 	"sokuim/sokuim-server/pkg/logger"
 	xtime "sokuim/sokuim-server/pkg/time"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -43,7 +45,6 @@ func InitTCP(s *Server, addrs []string, accept int, log *logger.Logger) (err err
 			go acceptTCP(s, listener, log)
 		}
 	}
-	log.Info(ctx, listener)
 	return
 }
 
@@ -120,14 +121,120 @@ func (s *Server) ServeTCP(conn *net.TCPConn, rp, wp *bytes.Pool, tr *xtime.Timer
 			ch.Watch(accepts...)
 			b = s.Bucket(ch.Key)
 			err = b.Put(rid, ch)
-			s.log.Infof(ctx, "tcp connected key: %s, mid: %s, proto: %+v", ch.Key, ch.Mid, ch)
 		}
 	}
-	s.log.Info(ctx, "aaa: ", ch.IP)
-	s.log.Info(ctx, err, rid, accepts, hb, p, b, trd, lastHb, rr, wr, step)
+	step = 2
+	if err != nil {
+		conn.Close()
+		rp.Put(rb)
+		wp.Put(wb)
+		tr.Del(trd)
+		s.log.Infof(ctx, "tcp key: %s handshake failed error: %v", ch.Key, err)
+	}
+	trd.Key = ch.Key
+	tr.Set(trd, hb)
+	step = 3
+	// hanshake ok start dispatch goroutine
+	go s.dispatchTCP(ctx, conn, wr, wp, wb, ch)
+	serverHeartbeat := s.RandServerHearbeat()
+	for {
+		if p, err = ch.CliProto.Set(); err != nil {
+			break
+		}
+		if err = p.ReadTCP(rr); err != nil {
+			return
+		}
+		if p.Op == pb.OpHeartbeat {
+			tr.Set(trd, hb)
+			p.Op = pb.OpHeartbeatResp
+			p.Body = nil
+			if now := time.Now(); now.Sub(lastHb) > serverHeartbeat {
+				if err1 := s.Heartbeat(ctx, ch.Mid, ch.Key); err1 == nil {
+					lastHb = now
+				}
+			}
+			s.log.Infof(ctx, "tcp heartbeat receive key:%s, mid:%d", ch.Key, ch.Mid)
+			step++
+		} else {
+			if err = s.Operate(ctx, p, ch, b); err != nil {
+				break
+			}
+		}
+		ch.CliProto.SetAdv()
+		ch.Signal()
+	}
+	if err != nil && err != io.EOF && !strings.Contains(err.Error(), "closed") {
+		s.log.Errorf(ctx, "key: %s server tcp failed error(%v)", ch.Key, err)
+	}
+	b.Del(ch)
+	tr.Del(trd)
+	rp.Put(rb)
+	conn.Close()
+	ch.Close()
+	if err = s.Disconnect(ctx, ch.Mid, ch.Key); err != nil {
+		s.log.Errorf(ctx, "key: %s mid: %d operator do disconnect error(%v)", ch.Key, ch.Mid, err)
+	}
+	s.log.Info(ctx, "tcp disconnected key: %s mid: %d", ch.Key, ch.Mid)
+}
+
+func (s *Server) dispatchTCP(ctx context.Context, conn *net.TCPConn, wr *bufio.Writer, wp *bytes.Pool, wb *bytes.Buffer, ch *Channel) {
+	var (
+		err    error
+		finish bool
+		online int32
+	)
+	s.log.Infof(ctx, "key %s dispatch tcp goroutine", ch.Key)
+	for {
+		var p = ch.Ready()
+		s.log.Infof(ctx, "key %s dispatch msg: %v", ch.Key, p)
+		switch p {
+		case pb.ProtoFinish:
+			s.log.Infof(ctx, "key: %s wakeup exit dispatch goroutine", ch.Key)
+			finish = true
+			goto field
+		case pb.ProtoReady:
+			// fetch message from svrbox(client send)
+			for {
+				if p, err = ch.CliProto.Get(); err != nil {
+					break
+				}
+				if p.Op == pb.OpHeartbeatResp {
+					if ch.Room != nil {
+						online = ch.Room.OnlineNum()
+					}
+					if err = p.WriteTCPHeader(wr, online); err != nil {
+						goto field
+					}
+				} else {
+					if err = p.WriteTCP(wr); err != nil {
+						goto field
+					}
+				}
+				p.Body = nil
+				ch.CliProto.GetAdv()
+			}
+		default:
+			if err = p.WriteTCP(wr); err != nil {
+				goto field
+			}
+			s.log.Infof(ctx, "tcp sent a message key:%s mid:%d proto:%+v", ch.Key, ch.Mid, p)
+		}
+	}
+field:
+	if err != nil {
+		s.log.Errorf(ctx, "key: %s dispatch tcp error(%v)", ch.Key, err)
+	}
+	conn.Close()
+	wp.Put(wb)
+	for !finish {
+		finish = (ch.Ready() == pb.ProtoFinish)
+	}
+	s.log.Infof(ctx, "key: %s dispatch goroutine exit", ch.Key)
 }
 
 func (s *Server) authTCP(ctx context.Context, rr *bufio.Reader, wr *bufio.Writer, p *pb.CometMsgProto) (mid, key, rid string, accepts []int32, hb time.Duration, err error) {
 	mid = uuid.New().String()
+	key = uuid.New().String()
+	hb = time.Duration(5 * time.Second)
 	return
 }

@@ -9,6 +9,7 @@
 package pb
 
 import (
+	"sokuim/sokuim-server/pkg/bufio"
 	"sokuim/sokuim-server/pkg/bytes"
 	"sokuim/sokuim-server/pkg/encoding/binary"
 	"sokuim/sokuim-server/pkg/xerr"
@@ -53,4 +54,69 @@ func (p *CometMsgProto) WriteTo(b *bytes.Writer) {
 	if p.Body != nil {
 		b.Write(p.Body)
 	}
+}
+
+func (p *CometMsgProto) WriteTCP(wr *bufio.Writer) (err error) {
+	var (
+		buf     []byte
+		packLen int32
+	)
+	if p.Op == OpRaw {
+		_, err = wr.WriteRaw(p.Body)
+		return
+	}
+	packLen = _rawHeaderSize + int32(len(p.Body))
+	if buf, err = wr.Peek(_rawHeaderSize); err != nil {
+		return
+	}
+	binary.BigEndian.PutInt32(buf[_packOffset:], packLen)
+	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
+	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	if p.Body != nil {
+		_, err = wr.Write(p.Body)
+	}
+	return
+}
+
+func (p *CometMsgProto) WriteTCPHeader(wr *bufio.Writer, online int32) (err error) {
+	var (
+		buf     []byte
+		packLen int
+	)
+	packLen = _rawHeaderSize + _heartSize
+	if buf, err = wr.Peek(packLen); err != nil {
+		return
+	}
+	binary.BigEndian.PutInt32(buf[_packOffset:], int32(packLen))
+	binary.BigEndian.PutInt16(buf[_headerOffset:], int16(_rawHeaderSize))
+	binary.BigEndian.PutInt32(buf[_opOffset:], p.Op)
+	binary.BigEndian.PutInt32(buf[_heartOffset:], online)
+	return
+}
+
+func (p *CometMsgProto) ReadTCP(rr *bufio.Reader) (err error) {
+	var (
+		bodyLen   int
+		headerLen int16
+		packLen   int32
+		buf       []byte
+	)
+	if buf, err = rr.Pop(_rawHeaderSize); err != nil {
+		return
+	}
+	packLen = binary.BigEndian.Int32(buf[_packOffset:_headerOffset])
+	headerLen = binary.BigEndian.Int16(buf[_headerOffset:_opOffset])
+	p.Op = binary.BigEndian.Int32(buf[_opOffset:])
+	if packLen > _maxPackSize {
+		return ErrorProtoPackLen
+	}
+	if headerLen != _rawHeaderSize {
+		return ErrProtoHeaderLen
+	}
+	if bodyLen = int(packLen - int32(headerLen)); bodyLen > 0 {
+		p.Body, err = rr.Pop(bodyLen)
+	} else {
+		p.Body = nil
+	}
+	return
 }

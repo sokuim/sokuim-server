@@ -10,7 +10,9 @@ package server
 
 import (
 	"context"
+	"sokuim/sokuim-server/app/comet/pb"
 	"sokuim/sokuim-server/app/core/client/socket"
+	"sokuim/sokuim-server/pkg/strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding/gzip"
@@ -25,4 +27,37 @@ func (s *Server) RenewOnline(ctx context.Context, serverID string, roomCount map
 		return
 	}
 	return reply.AllRoomCount, nil
+}
+
+func (s *Server) Receive(ctx context.Context, mid string, p *pb.CometMsgProto) (err error) {
+	_, err = s.socketRPC.Receive(ctx, &socket.SocketReceiveReq{
+		Mid: mid,
+		Proto: &socket.SocketMsgProto{
+			Op:   p.Op,
+			Body: p.Body,
+		},
+	})
+	return
+}
+
+func (s *Server) Operate(ctx context.Context, p *pb.CometMsgProto, ch *Channel, b *Bucket) (err error) {
+	switch p.Op {
+	case pb.OpChangeRoom:
+		err = b.ChangeRoom(string(p.Body), ch)
+		p.Op = pb.OpChangeRoomResp
+	case pb.OpSub:
+		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
+			ch.Watch(ops...)
+		}
+		p.Op = pb.OpSubResp
+	case pb.OpUnsub:
+		if ops, err := strings.SplitInt32s(string(p.Body), ","); err == nil {
+			ch.UnWatch(ops...)
+		}
+		p.Op = pb.OpUnsubResp
+	default:
+		err = s.Receive(ctx, ch.Mid, p)
+		p.Body = nil
+	}
+	return
 }

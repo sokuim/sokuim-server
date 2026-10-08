@@ -3,6 +3,11 @@ syntax = "proto3";
 package pb;
 option go_package = "./pb";
 
+message SocketMsgProto {
+  int32 op = 1;
+  bytes body = 2;
+}
+
 message SocketConnectReq {
   string Server = 1;
   string Cookie = 2;
@@ -15,6 +20,16 @@ message SocketConnectResp {
   string Server = 3;
 }
 
+message SocketDisconnectReq {
+  string mid = 1;
+  string key = 2;
+  string server = 3;
+}
+
+message SocketDisconnectResp {
+  bool has = 1;
+}
+
 message SocketOnlineReq {
   string server = 1;
   map<string, int32> roomCount = 2;
@@ -24,8 +39,26 @@ message SocketOnlineResp {
   map<string, int32> allRoomCount = 1;
 }
 
+message SocketHeartbeatReq {
+  string mid = 1;
+  string key = 2;
+  string server = 3;
+}
+
+message SocketHeartbeatResp {}
+
+message SocketReceiveReq {
+  string mid = 1;
+  SocketMsgProto proto = 2;
+}
+
+message SocketReceiveResp {}
+
 service Socket {
   // Connect valid socket connect
   rpc Connect (SocketConnectReq) returns (SocketConnectResp);
-  rpc RenewOnline(SocketOnlineReq) returns (SocketOnlineResp);
+  rpc Disconnect (SocketDisconnectReq) returns (SocketDisconnectResp);
+  rpc RenewOnline (SocketOnlineReq) returns (SocketOnlineResp);
+  rpc Heartbeat (SocketHeartbeatReq) returns (SocketHeartbeatResp);
+  rpc Receive (SocketReceiveReq) returns (SocketReceiveResp);
 }

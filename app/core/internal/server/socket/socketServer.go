@@ -29,7 +29,22 @@ func (s *SocketServer) Connect(ctx context.Context, in *pb.SocketConnectReq) (*p
 	return l.Connect(in)
 }
 
+func (s *SocketServer) Disconnect(ctx context.Context, in *pb.SocketDisconnectReq) (*pb.SocketDisconnectResp, error) {
+	l := socketlogic.NewDisconnectLogic(ctx, s.svcCtx)
+	return l.Disconnect(in)
+}
+
 func (s *SocketServer) RenewOnline(ctx context.Context, in *pb.SocketOnlineReq) (*pb.SocketOnlineResp, error) {
 	l := socketlogic.NewRenewOnlineLogic(ctx, s.svcCtx)
 	return l.RenewOnline(in)
+}
+
+func (s *SocketServer) Heartbeat(ctx context.Context, in *pb.SocketHeartbeatReq) (*pb.SocketHeartbeatResp, error) {
+	l := socketlogic.NewHeartbeatLogic(ctx, s.svcCtx)
+	return l.Heartbeat(in)
+}
+
+func (s *SocketServer) Receive(ctx context.Context, in *pb.SocketReceiveReq) (*pb.SocketReceiveResp, error) {
+	l := socketlogic.NewReceiveLogic(ctx, s.svcCtx)
+	return l.Receive(in)
 }

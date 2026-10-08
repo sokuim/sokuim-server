@@ -20,7 +20,10 @@ const _ = grpc.SupportPackageIsVersion7
 type SocketClient interface {
 	// Connect valid socket connect
 	Connect(ctx context.Context, in *SocketConnectReq, opts ...grpc.CallOption) (*SocketConnectResp, error)
+	Disconnect(ctx context.Context, in *SocketDisconnectReq, opts ...grpc.CallOption) (*SocketDisconnectResp, error)
 	RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error)
+	Heartbeat(ctx context.Context, in *SocketHeartbeatReq, opts ...grpc.CallOption) (*SocketHeartbeatResp, error)
+	Receive(ctx context.Context, in *SocketReceiveReq, opts ...grpc.CallOption) (*SocketReceiveResp, error)
 }
 
 type socketClient struct {
@@ -40,9 +43,36 @@ func (c *socketClient) Connect(ctx context.Context, in *SocketConnectReq, opts .
 	return out, nil
 }
 
+func (c *socketClient) Disconnect(ctx context.Context, in *SocketDisconnectReq, opts ...grpc.CallOption) (*SocketDisconnectResp, error) {
+	out := new(SocketDisconnectResp)
+	err := c.cc.Invoke(ctx, "/pb.Socket/Disconnect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *socketClient) RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error) {
 	out := new(SocketOnlineResp)
 	err := c.cc.Invoke(ctx, "/pb.Socket/RenewOnline", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) Heartbeat(ctx context.Context, in *SocketHeartbeatReq, opts ...grpc.CallOption) (*SocketHeartbeatResp, error) {
+	out := new(SocketHeartbeatResp)
+	err := c.cc.Invoke(ctx, "/pb.Socket/Heartbeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *socketClient) Receive(ctx context.Context, in *SocketReceiveReq, opts ...grpc.CallOption) (*SocketReceiveResp, error) {
+	out := new(SocketReceiveResp)
+	err := c.cc.Invoke(ctx, "/pb.Socket/Receive", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +85,10 @@ func (c *socketClient) RenewOnline(ctx context.Context, in *SocketOnlineReq, opt
 type SocketServer interface {
 	// Connect valid socket connect
 	Connect(context.Context, *SocketConnectReq) (*SocketConnectResp, error)
+	Disconnect(context.Context, *SocketDisconnectReq) (*SocketDisconnectResp, error)
 	RenewOnline(context.Context, *SocketOnlineReq) (*SocketOnlineResp, error)
+	Heartbeat(context.Context, *SocketHeartbeatReq) (*SocketHeartbeatResp, error)
+	Receive(context.Context, *SocketReceiveReq) (*SocketReceiveResp, error)
 	mustEmbedUnimplementedSocketServer()
 }
 
@@ -66,8 +99,17 @@ type UnimplementedSocketServer struct {
 func (UnimplementedSocketServer) Connect(context.Context, *SocketConnectReq) (*SocketConnectResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
 }
+func (UnimplementedSocketServer) Disconnect(context.Context, *SocketDisconnectReq) (*SocketDisconnectResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+}
 func (UnimplementedSocketServer) RenewOnline(context.Context, *SocketOnlineReq) (*SocketOnlineResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RenewOnline not implemented")
+}
+func (UnimplementedSocketServer) Heartbeat(context.Context, *SocketHeartbeatReq) (*SocketHeartbeatResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+}
+func (UnimplementedSocketServer) Receive(context.Context, *SocketReceiveReq) (*SocketReceiveResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Receive not implemented")
 }
 func (UnimplementedSocketServer) mustEmbedUnimplementedSocketServer() {}
 
@@ -100,6 +142,24 @@ func _Socket_Connect_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Socket_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SocketDisconnectReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).Disconnect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Socket/Disconnect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).Disconnect(ctx, req.(*SocketDisconnectReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Socket_RenewOnline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SocketOnlineReq)
 	if err := dec(in); err != nil {
@@ -118,6 +178,42 @@ func _Socket_RenewOnline_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Socket_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SocketHeartbeatReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).Heartbeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Socket/Heartbeat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).Heartbeat(ctx, req.(*SocketHeartbeatReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Socket_Receive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SocketReceiveReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SocketServer).Receive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Socket/Receive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SocketServer).Receive(ctx, req.(*SocketReceiveReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Socket_ServiceDesc is the grpc.ServiceDesc for Socket service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,8 +226,20 @@ var Socket_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Socket_Connect_Handler,
 		},
 		{
+			MethodName: "Disconnect",
+			Handler:    _Socket_Disconnect_Handler,
+		},
+		{
 			MethodName: "RenewOnline",
 			Handler:    _Socket_RenewOnline_Handler,
+		},
+		{
+			MethodName: "Heartbeat",
+			Handler:    _Socket_Heartbeat_Handler,
+		},
+		{
+			MethodName: "Receive",
+			Handler:    _Socket_Receive_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

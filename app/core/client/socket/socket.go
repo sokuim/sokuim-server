@@ -14,15 +14,25 @@ import (
 )
 
 type (
-	SocketConnectReq  = pb.SocketConnectReq
-	SocketConnectResp = pb.SocketConnectResp
-	SocketOnlineReq   = pb.SocketOnlineReq
-	SocketOnlineResp  = pb.SocketOnlineResp
+	SocketConnectReq     = pb.SocketConnectReq
+	SocketConnectResp    = pb.SocketConnectResp
+	SocketDisconnectReq  = pb.SocketDisconnectReq
+	SocketDisconnectResp = pb.SocketDisconnectResp
+	SocketHeartbeatReq   = pb.SocketHeartbeatReq
+	SocketHeartbeatResp  = pb.SocketHeartbeatResp
+	SocketMsgProto       = pb.SocketMsgProto
+	SocketOnlineReq      = pb.SocketOnlineReq
+	SocketOnlineResp     = pb.SocketOnlineResp
+	SocketReceiveReq     = pb.SocketReceiveReq
+	SocketReceiveResp    = pb.SocketReceiveResp
 
 	Socket interface {
 		// Connect valid socket connect
 		Connect(ctx context.Context, in *SocketConnectReq, opts ...grpc.CallOption) (*SocketConnectResp, error)
+		Disconnect(ctx context.Context, in *SocketDisconnectReq, opts ...grpc.CallOption) (*SocketDisconnectResp, error)
 		RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error)
+		Heartbeat(ctx context.Context, in *SocketHeartbeatReq, opts ...grpc.CallOption) (*SocketHeartbeatResp, error)
+		Receive(ctx context.Context, in *SocketReceiveReq, opts ...grpc.CallOption) (*SocketReceiveResp, error)
 	}
 
 	defaultSocket struct {
@@ -42,7 +52,22 @@ func (m *defaultSocket) Connect(ctx context.Context, in *SocketConnectReq, opts 
 	return client.Connect(ctx, in, opts...)
 }
 
+func (m *defaultSocket) Disconnect(ctx context.Context, in *SocketDisconnectReq, opts ...grpc.CallOption) (*SocketDisconnectResp, error) {
+	client := pb.NewSocketClient(m.cli.Conn())
+	return client.Disconnect(ctx, in, opts...)
+}
+
 func (m *defaultSocket) RenewOnline(ctx context.Context, in *SocketOnlineReq, opts ...grpc.CallOption) (*SocketOnlineResp, error) {
 	client := pb.NewSocketClient(m.cli.Conn())
 	return client.RenewOnline(ctx, in, opts...)
+}
+
+func (m *defaultSocket) Heartbeat(ctx context.Context, in *SocketHeartbeatReq, opts ...grpc.CallOption) (*SocketHeartbeatResp, error) {
+	client := pb.NewSocketClient(m.cli.Conn())
+	return client.Heartbeat(ctx, in, opts...)
+}
+
+func (m *defaultSocket) Receive(ctx context.Context, in *SocketReceiveReq, opts ...grpc.CallOption) (*SocketReceiveResp, error) {
+	client := pb.NewSocketClient(m.cli.Conn())
+	return client.Receive(ctx, in, opts...)
 }
